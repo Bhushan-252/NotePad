@@ -6,34 +6,43 @@ import javax.swing.plaf.metal.DefaultMetalTheme;
 import javax.swing.plaf.metal.MetalLookAndFeel;
 import java.awt.*;
 import java.awt.event.*;
+import java.io.*;
 
 @SuppressWarnings("ALL")
 public class NotepadDesign extends JFrame {
     public JMenuItem optionNew, optionOpen, optionSave, optionSaveAs, optionExit;
     public JMenuItem optionCut, optionCopy, optionPaste, optionSelectAll;
     public JMenuItem optionFont;
+    public JMenuItem optionSkin;
     public JTextArea textArea;
     public JScrollPane scrollPane;
+    JMenuBar jMenuBar;
     public JCheckBoxMenuItem wrapWord;
+    DefaultMetalTheme z;
     Font font;
-    public String[] fontDetailsStore = {"Arial","0","22"};
-    public Color skinBackground =new Color(0,0,0);
-    public Color skinForeground =new Color(0, 225, 0);
+    public String[] fontDetailsStore = new String[3];
+    public Color skinBackground =new Color(255, 255, 255);
+    public Color skinForeground =new Color(0, 0, 0);
     private JMenu fileMenu, editMenu, formatMenu, aboutMenu;
 
-    public NotepadDesign() throws HeadlessException {
+    public NotepadDesign() throws HeadlessException, IOException {
         this.setSize(500, 500);
         this.setTitle("Untitled - Notepad");
         createTextArea();
         menuDesign();
-
-        this.setLocationRelativeTo(null);
         this.setUndecorated(true);
+        changeTheme();
+
+    }
+
+    public void changeTheme(){
+        this.setLocationRelativeTo(null);
+
         this.getRootPane().setWindowDecorationStyle
                 (
                         JRootPane.FRAME
                 );
-        DefaultMetalTheme z = new DefaultMetalTheme() {
+        z = new DefaultMetalTheme() {
             public ColorUIResource
             getWindowTitleBackground() {
                 return new ColorUIResource
@@ -59,7 +68,7 @@ public class NotepadDesign extends JFrame {
                         (skinBackground);
             }
 
-//            start ActiveBumps
+            //            start ActiveBumps
 //            public ColorUIResource
 //            getPrimaryControlHighlight()
 //            {
@@ -89,7 +98,7 @@ public class NotepadDesign extends JFrame {
                 return new ColorUIResource
                         (skinBackground);
             }
-//
+            //
             @Override
             public ColorUIResource
             getMenuForeground() {
@@ -108,16 +117,26 @@ public class NotepadDesign extends JFrame {
         SwingUtilities.updateComponentTreeUI(this);
         this.setVisible(true);
 
+        // Menu Bar
+        jMenuBar.setBorderPainted(true);
+        jMenuBar.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(skinForeground, 1),
+                BorderFactory.createEmptyBorder()));
+        jMenuBar.setOpaque(true);
+        jMenuBar.setBackground(skinBackground);
+        // This Desing For Text Area
 
-
+        textArea.setCaretColor(skinForeground);
+        textArea.setSelectedTextColor(skinBackground);
+        textArea.setSelectionColor(skinForeground);
+        textArea.setBackground(skinBackground);
+        textArea.setForeground(skinForeground);
     }
-
 
     /*========================================================== Start The MenuBar Design ===================================================== */
     //This Method Create Design of MenuBar And All Items.
     public final void menuDesign() {
 
-        JMenuBar jMenuBar = new JMenuBar();
+        jMenuBar = new JMenuBar();
         jMenuBar.setSize(100, 100);
         jMenuBar.setBorderPainted(true);
         jMenuBar.setBorder(BorderFactory.createCompoundBorder(BorderFactory.createLineBorder(skinForeground, 1),
@@ -139,12 +158,26 @@ public class NotepadDesign extends JFrame {
 
     }
 
-    public final void createTextArea() {
+    public final void createTextArea() throws IOException {
         textArea = new JTextArea();
 
 //        textArea.setLineWrap(true);
+        try{
+        FileInputStream stream = new FileInputStream("test.obj");
+        ObjectInputStream inputStream = new ObjectInputStream(stream);
+                font = (Font) inputStream.readObject();
+                changeFont(font);
+                inputStream.close();
 
-        textArea.setFont(new Font("Verdana", Font.PLAIN, 24));
+        }
+        catch(Exception e) {
+            e.printStackTrace();
+            font = new Font("Verdana", Font.PLAIN, 12);
+            changeFont(font);
+        }
+        textArea.setFont(font);
+
+
         scrollPane = new JScrollPane(textArea, JScrollPane.VERTICAL_SCROLLBAR_AS_NEEDED, JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
         textArea.setCaretColor(skinForeground);
         textArea.setSelectedTextColor(skinBackground);
@@ -212,16 +245,16 @@ public class NotepadDesign extends JFrame {
         editMenu.setFocusPainted(false);
         editMenu.setSize(100, 100);
 
-        optionCut = new JMenuItem("CUT                       Ctrl+X");
+        optionCut = new JMenuItem("CUT");
         editMenu.add(optionCut);
 
-        optionCopy = new JMenuItem("COPY                    Ctrl+C");
+        optionCopy = new JMenuItem("COPY ");
         editMenu.add(optionCopy);
 
-        optionPaste = new JMenuItem("PASTE                  Ctrl+V");
+        optionPaste = new JMenuItem("PASTE ");
         editMenu.add(optionPaste);
 
-        optionSelectAll= new JMenuItem("SELECT-ALL       Ctrl+A");
+        optionSelectAll= new JMenuItem("SELECT-ALL ");
         editMenu.add(optionSelectAll);
 
 
@@ -272,6 +305,27 @@ public class NotepadDesign extends JFrame {
         aboutMenu.setFocusPainted(false);
         aboutMenu.setSize(100, 100);
 
+        optionSkin = new JMenu("Skins");
+        changeThemeOption(optionSkin, new JMenuItem("Black And White"), Color.WHITE,Color.BLACK);
+        changeThemeOption(optionSkin, new JMenuItem("Green And Black"), Color.GREEN,Color.BLACK);
+        changeThemeOption(optionSkin, new JMenuItem("Default"), Color.BLACK, Color.WHITE);
+        aboutMenu.add(optionSkin);
+
+    }
+
+
+    final void changeThemeOption(JMenuItem Parent,JMenuItem item,Color ForeCol,Color BackCol){
+
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                setSkinForeground(ForeCol);
+                setSkinBackground(BackCol);
+                changeTheme();
+            }
+        });
+        Parent.add(item);
+
     }
 
     public void setSkinForeground(Color skinForeground) {
@@ -307,5 +361,10 @@ public class NotepadDesign extends JFrame {
 
 
 
+    }
+    private final void changeFont(Font font){
+        fontDetailsStore[0] = font.getFamily();
+        fontDetailsStore[1] = String.valueOf(font.getStyle());
+        fontDetailsStore[2] = String.valueOf(font.getSize());
     }
 }
