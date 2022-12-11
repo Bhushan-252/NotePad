@@ -119,13 +119,18 @@ class InsidePanel extends NotepadFormatItem {
     public InsidePanel(JTextArea textArea, String[] fontDetailsStore, NotepadDesign s) {
         super(s);
         this.textArea = textArea;
-        this.s = s;
-
+        this.s =s ;
+        this.fontDetailsStore = fontDetailsStore;
+        System.out.println(fontDetailsStore[0] + Integer.parseInt(fontDetailsStore[1]) + Integer.parseInt(fontDetailsStore[2]));
+        fontFamily = fontDetailsStore[0];
+        fontStyle = Integer.parseInt(fontDetailsStore[1]) < 0 ? 1 : Integer.parseInt(fontDetailsStore[1]);
+        fontSize = Integer.parseInt(fontDetailsStore[2]);
         inside = new JPanel();
         inside.setSize(this.getWidth() - 10, this.getHeight() - 10);
         inside.setLayout(null);
         inside.setOpaque(true);
-        inside.setBackground(new Color(243, 202, 202));
+        inside.setBackground(s.skinBackground);
+        inside.setForeground(s.skinForeground);
         this.add(inside);
         fontList();
         fontStyleList();
@@ -133,43 +138,36 @@ class InsidePanel extends NotepadFormatItem {
         onClose();
         label = new JLabel("AbCdEf");
         label.setBounds(50, 200, 450, 200);
-        label.setForeground(design.skinForeground);
+        label.setForeground(s.skinForeground);
         inside.add(label);
         sample();
         buttonDesings();
         buttonActions();
-        this.fontDetailsStore = fontDetailsStore;
-        fontFamily = fontDetailsStore[0];
-        fontStyle = Integer.parseInt(fontDetailsStore[1]);
-        fontSize = Integer.parseInt(fontDetailsStore[2]);
+
+
     }
 
 
     public void fontList() {
         fontField = new TextField();
         fontField.setBounds(20, 80, 150, 25);
-        fontField.setBackground(new Color(33, 37, 43));
-        fontField.setForeground(Color.green);
+        fontField.setBackground(s.skinBackground);
+        fontField.setForeground(s.skinForeground);
 
         inside.add(fontField);
 
         fontBox = new List(5, false);
         fontBox.setBounds(20, 110, 150, 120);
-        fontBox.addItem("Arial");
-        fontBox.addItem("Times New Roman");
-        fontBox.addItem("Ravie");
-        fontBox.addItem("Courier ");
-        fontBox.addItem("Verdana");
-        fontBox.addItem("Georgia");
-        fontBox.addItem("Palatino");
-        fontBox.addItem("Garamond");
-        fontBox.addItem("Bookman");
-        fontBox.addItem("Impact");
-        fontBox.setBackground(new Color(33, 37, 43));
-        fontBox.setForeground(design.skinForeground);
+        String Fonts[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getAvailableFontFamilyNames();
+        for (String s:
+             Fonts) {
+            fontBox.add(s);
+        }
+        fontBox.setBackground(s.skinBackground);
+        fontBox.setForeground(s.skinForeground);
         inside.add(fontBox);
         fontField.setText(
-                fontBox.getItem(0)
+                fontFamily
         );
         this.fontBox.addItemListener(new ItemListener() {
             @Override
@@ -185,8 +183,8 @@ class InsidePanel extends NotepadFormatItem {
     public void fontStyleList() {
         fontStyleField = new TextField();
         fontStyleField.setBounds(200, 80, 150, 25);
-        fontStyleField.setBackground(new Color(33, 37, 43));
-        fontStyleField.setForeground(Color.green);
+        fontStyleField.setBackground(s.skinBackground);
+        fontStyleField.setForeground(s.skinForeground);
 
         inside.add(fontStyleField);
 
@@ -196,11 +194,11 @@ class InsidePanel extends NotepadFormatItem {
         fontStyleBox.addItem("Bold");
         fontStyleBox.addItem("Italic");
 
-        fontStyleBox.setBackground(new Color(33, 37, 43));
-        fontStyleBox.setForeground(design.skinForeground);
+        fontStyleBox.setBackground(s.skinBackground);
+        fontStyleBox.setForeground(s.skinForeground);
         inside.add(fontStyleBox);
         fontStyleField.setText(
-                fontStyleBox.getItem(0)
+              fontStyleBox.getItem(fontStyle)
         );
         this.fontStyleBox.addItemListener(new ItemListener() {
             @Override
@@ -214,8 +212,8 @@ class InsidePanel extends NotepadFormatItem {
     public void fontSizeList() {
         fontSizeField = new TextField();
         fontSizeField.setBounds(370, 80, 50, 25);
-        fontSizeField.setBackground(new Color(33, 37, 43));
-        fontSizeField.setForeground(Color.green);
+        fontSizeField.setBackground(s.skinBackground);
+        fontSizeField.setForeground(s.skinForeground);
         inside.add(fontSizeField);
 
         fontSizeBox = new List(5, false);
@@ -225,20 +223,42 @@ class InsidePanel extends NotepadFormatItem {
             i++;
         }
 
-        fontSizeBox.setBackground(new Color(33, 37, 43));
-        fontSizeBox.setForeground(design.skinForeground);
+        fontSizeBox.setBackground(s.skinBackground);
+        fontSizeBox.setForeground(s.skinForeground);
         inside.add(fontSizeBox);
         fontSizeField.setText(
-                fontSizeBox.getItem(6)
+                String.valueOf(fontSize)
         );
         this.fontSizeBox.addItemListener(new ItemListener() {
             @Override
             public void itemStateChanged(ItemEvent e) {
                 fontSizeField.setText(fontSizeBox.getSelectedItem());
+            }
+        });
+        this.fontSizeField.addTextListener(new TextListener() {
+            @Override
+            public void textValueChanged(TextEvent e) {
+                int valueOfSize = 0;
+                fontSizeField= (TextField)e.getSource();
+                fontSizeField.setCaretPosition(fontSizeField.getText().length());
+//                if (fontSizeField.getText().equals("8")){
+//                    fontSizeField.setCaretPosition(fontSizeField.getText().length()+1);
+//                }
+               try {
+                   valueOfSize = Integer.parseInt(fontSizeField.getText());
+               }catch (NumberFormatException n){
+
+                   valueOfSize = 8;
+
+               }
+                    if(valueOfSize > 128 || valueOfSize == 0 ){
+                        valueOfSize = 128;
+                    }
+
+                fontSizeField.setText(String.valueOf(valueOfSize));
                 sample();
             }
         });
-
     }
 
     public void addItemsM(int i) {
@@ -262,6 +282,7 @@ class InsidePanel extends NotepadFormatItem {
         buttonOk.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+
                 fontDetailsStore[0] = fontField.getText().toString();
                 fontDetailsStore[1] = String.valueOf(fontStyleBox.getSelectedIndex());
                 fontDetailsStore[2] = fontSizeField.getText();
@@ -280,7 +301,6 @@ class InsidePanel extends NotepadFormatItem {
             @Override
             public void actionPerformed(ActionEvent e) {
                 textArea.setFont(new Font(fontFamily, fontStyle, fontSize));
-                System.out.println("yet ahe");
                 dispose();
                 s.enable();
                 s.requestFocus();
@@ -304,6 +324,7 @@ class InsidePanel extends NotepadFormatItem {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                textArea.setFont(new Font(fontFamily, fontStyle, fontSize));
                 s.enable();
                 s.requestFocus();
             }

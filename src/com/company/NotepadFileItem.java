@@ -3,16 +3,14 @@ package com.company;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
-import java.io.BufferedReader;
-import java.io.FileReader;
-import java.io.FileWriter;
+import java.io.*;
 
 public class NotepadFileItem extends NotepadDesign implements ActionListener {
     String fileName;
     String FileAddress;
     String title = "Untitled - Notepad";
 
-    NotepadFileItem() {
+    NotepadFileItem() throws IOException {
         super();
         optionNew.addActionListener(this);
         optionOpen.addActionListener(this);
@@ -23,7 +21,11 @@ public class NotepadFileItem extends NotepadDesign implements ActionListener {
         this.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                checkOnExit();
+                try {
+                    checkOnExit();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         });
         checkChange();
@@ -89,7 +91,7 @@ public class NotepadFileItem extends NotepadDesign implements ActionListener {
         }
     }
 
-    public void exit() {
+    public void exit() throws IOException {
         checkOnExit();
 
 
@@ -126,7 +128,13 @@ public class NotepadFileItem extends NotepadDesign implements ActionListener {
             case "open" -> this.open();
             case "save" -> this.save();
             case "saveAs" -> this.saveAs();
-            case "exit" -> this.exit();
+            case "exit" -> {
+                try {
+                    this.exit();
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
+            }
             default -> throw new IllegalStateException("Unexpected value: " + command);
         }
     }
@@ -142,7 +150,12 @@ public class NotepadFileItem extends NotepadDesign implements ActionListener {
 
     }
 
-    public void checkOnExit() {
+    public void checkOnExit() throws IOException {
+        FileOutputStream stream = new FileOutputStream("test.obj");
+        ObjectOutputStream out = new ObjectOutputStream(stream);
+        out.writeObject(textArea.getFont());
+        out.flush();
+        out.close();
         int userInputOnExit = 3;
         if (this.getTitle().startsWith("*")) {
             userInputOnExit = JOptionPane.showConfirmDialog(this, "You want to save file");
