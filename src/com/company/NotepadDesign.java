@@ -302,13 +302,22 @@ public class NotepadDesign extends JFrame {
     // This Method Make GUI Design of  MenuBars -> About
     public final void aboutDesign() {
         aboutMenu = new JMenu("About");
+        JColorChooser chooser = new JColorChooser();
         aboutMenu.setFocusPainted(false);
         aboutMenu.setSize(100, 100);
 
         optionSkin = new JMenu("Skins");
         changeThemeOption(optionSkin, new JMenuItem("Black And White"), Color.WHITE,Color.BLACK);
         changeThemeOption(optionSkin, new JMenuItem("Green And Black"), Color.GREEN,Color.BLACK);
+        changeThemeOption(optionSkin, new JMenuItem("White And Cyan"),Color.cyan,Color.WHITE);
         changeThemeOption(optionSkin, new JMenuItem("Default"), Color.BLACK, Color.WHITE);
+        changeThemeOption(optionSkin, new JMenuItem("Custom"), chooser);
+
+
+
+        System.out.println();
+//        System.out.println(chooser.getColor());
+
         aboutMenu.add(optionSkin);
 
     }
@@ -327,6 +336,33 @@ public class NotepadDesign extends JFrame {
         Parent.add(item);
 
     }
+    final void changeThemeOption(JMenuItem Parent,JMenuItem item,JColorChooser chooser){
+
+
+        item.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+    try {
+        Color ForeCol = chooser.showDialog(NotepadDesign.this, "Choose Foreground Color", Color.BLACK);
+        Color BackCol = chooser.showDialog(NotepadDesign.this, "Choose Background Color", Color.WHITE);
+        int dx = ForeCol.getBlue() + ForeCol.getRed() + ForeCol.getGreen();
+        int dy = BackCol.getBlue() + BackCol.getGreen() + BackCol.getGreen();
+        if (dy != dx && Math.abs(dy-dx) >= 300   ) {
+            setSkinForeground(ForeCol);
+            setSkinBackground(BackCol);
+            changeTheme();
+        } else {
+            JOptionPane.showMessageDialog(chooser, "The both color can't be Same or Not Visibal to Eye", "Color Error", JOptionPane.WARNING_MESSAGE);
+        }
+    }catch(Exception es){
+
+    }
+            }
+        });
+        Parent.add(item);
+
+    }
+
 
     public void setSkinForeground(Color skinForeground) {
         this.skinForeground = skinForeground;
